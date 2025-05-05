@@ -1,11 +1,32 @@
--- This script creates the neccessary objects to run the Quickstart
 USE ROLE ACCOUNTADMIN;
 
-CREATE DATABASE IF NOT EXISTS SP_LLM_QS;
+-- Create a specic role to use for this QuiCkStart
+-- This is needed in order to use Notbokks with container runtimes
+CREATE ROLE SP_LLM_QS_ROLE;
 
+-- Grant the role to the current user
+SET THIS_USER = CURRENT_USER();
+grant ROLE SP_LLM_QS_ROLE to USER IDENTIFIER($THIS_USER);
+
+-- Create a datbase where we will store the data and the notebook
+CREATE OR REPLACE DATABASE SP_LLM_QS;
+
+-- Create a Warehouse to use for executing SQL
 CREATE WAREHOUSE IF NOT EXISTS SP_LLM_QS_WH;
 
+-- Grant ownership and all priviligies on the database and warehouse to the new role
+GRANT OWNERSHIP ON DATABASE SP_LLM_QS TO ROLE SP_LLM_QS_ROLE;
+GRANT ALL PRIVILEGES ON DATABASE SP_LLM_QS TO ROLE SP_LLM_QS_ROLE;
+GRANT OWNERSHIP ON ALL SCHEMAS IN DATABASE SP_LLM_QS TO ROLE SP_LLM_QS_ROLE;
+
+GRANT OWNERSHIP ON WAREHOUSE SP_LLM_QS_WH TO ROLE SP_LLM_QS_ROLE;
+GRANT ALL PRIVILEGES ON WAREHOUSE SP_LLM_QS_WH TO ROLE SP_LLM_QS_ROLE;
+
+-- Use th role for the rest of this script
+USE ROLE SP_LLM_QS_ROLE;
 USE DATABASE SP_LLM_QS;
+USE SCHEMA PUBLIC;
+
 
 -- Create a file format to be used when loading the sample data
 CREATE or REPLACE file format csvformat
